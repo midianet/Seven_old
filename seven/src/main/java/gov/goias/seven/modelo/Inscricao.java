@@ -3,7 +3,7 @@ package gov.goias.seven.modelo;
 public class Inscricao {
     private Long id;
     private Evento evento;
-    private Aluno aluno;
+    private String cpf;
 
     public Long getId() {
         return id;
@@ -21,12 +21,12 @@ public class Inscricao {
         this.evento = evento;
     }
 
-    public Aluno getAluno() {
-        return aluno;
+    public String getCPF() {
+        return cpf;
     }
 
-    public void setAluno(final Aluno aluno) {
-        this.aluno = aluno;
+    public void setCPF(final String numero) {
+        this.cpf = numero;
     }
 
 }

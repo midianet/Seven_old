@@ -4,45 +4,43 @@ import gov.goias.excecao.InfraExcecao;
 import gov.goias.seven.modelo.Evento;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Repository;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+@Repository
 public class EventoDAO {
     private final Logger logger = Logger.getLogger(EventoDAO.class);
     
     @Autowired
     NamedParameterJdbcTemplate jdbcTemplate;
 
-    private MapSqlParameterSource getParametros(){
-        return null; //TODO:Testar usar isso
-    }
-
-    private Evento getEvento(ResultSet rs, int i) throws SQLException {
+    private Evento getEvento(final ResultSet rs, final int i) throws SQLException {
         final Evento e = new Evento();
         e.setId(rs.getLong("EVEN_ID"));
-        e.setDescricao(rs.getString("EVEN_DESC"));
-        e.setDataInicio(rs.getDate("EVEN_INICIO"));
-        e.setDataFim(rs.getDate("EVEN_FIM"));
+        e.setDescricao(rs.getString("EVEN_DESCRICAO"));
         return e;
     }
 
-    public Evento obterPorId(Long id)throws InfraExcecao {
-        final String sql = "SELECT EVEN_ID,EVEN_DESC,EVEN_INICIO,EVEN_FIM FROM EVENTO WHERE EVEN_ID = :id";
+    public Evento obter(Long id)throws InfraExcecao {
+        final String sql = "SELECT EVEN_ID,EVEN_DESCRICAO FROM TB_EVENTO WHERE EVEN_ID = :id";
         final MapSqlParameterSource param = new MapSqlParameterSource();
         Evento retorno;
         try {
-            param.addValue("id",id);
+            param.addValue("id", id);
             retorno = jdbcTemplate.queryForObject(sql, param, this::getEvento);
-        }catch(EmptyResultDataAccessException e){
-            retorno = null;
-        }catch(Exception e){
+        } catch (DataAccessException e) {
             logger.debug(sql);
             logger.debug(param.getValues());
             logger.error(e);
@@ -52,15 +50,14 @@ public class EventoDAO {
     }
 
     public Evento incluir(final Evento evento) throws InfraExcecao{
-        final String sql = "INSERT INTO EVENTO(EVEN_DESC,EVEN_INICIO,EVEN_FIM)VALUES(:id,:desc,:inicio,:fim)";
+        final String sql = "INSERT INTO TB_EVENTO(EVEN_DESCRICAO)VALUES(:desc)";
         final MapSqlParameterSource param = new MapSqlParameterSource();
-        final KeyHolder id = new GeneratedKeyHolder();
+        final KeyHolder gen = new GeneratedKeyHolder();
         try {
             param.addValue("desc", evento.getDescricao());
-            param.addValue("inicio", evento.getDataInicio());
-            param.addValue("fim", evento.getDataFim());
-            jdbcTemplate.update(sql,param,id);
-            evento.setId((Long) id.getKey());
+            jdbcTemplate.update(sql,param,gen);
+            final Number id = (Number)gen.getKeys().get("even_id");
+            evento.setId(id.longValue());
         }catch(Exception e){
             logger.debug(sql);
             logger.debug(param.getValues());
@@ -70,14 +67,12 @@ public class EventoDAO {
         return evento;
     }
 
-    public Evento alterar(Evento evento) throws InfraExcecao{
-        final String sql = "UPDATE EVENTO SET EVEN_DESC = :desc , EVEN_INICIO = :inicio ,EVEN_FIM = :fim WHERE EVEN_ID = :id";
+    public Evento alterar(final Evento evento) throws InfraExcecao{
+        final String sql = "UPDATE TB_EVENTO SET EVEN_DESCRICAO = :desc WHERE EVEN_ID = :id";
         final MapSqlParameterSource param = new MapSqlParameterSource();
         try {
             param.addValue("id", evento.getId());
             param.addValue("desc", evento.getDescricao());
-            param.addValue("inicio", evento.getDataInicio());
-            param.addValue("fim", evento.getDataFim());
             jdbcTemplate.update(sql,param);
         }catch(Exception e){
             logger.debug(sql);
@@ -88,8 +83,8 @@ public class EventoDAO {
         return evento;
     }
 
-    public void excluir(Evento evento) throws InfraExcecao{
-        final String sql = "DELETE FROM EVENTO WHERE EVEN_ID = :id";
+    public void excluir(final Evento evento) throws InfraExcecao{
+        final String sql = "DELETE FROM TB_EVENTO WHERE EVEN_ID = :id";
         final MapSqlParameterSource param = new MapSqlParameterSource();
         try {
             param.addValue("id", evento.getId());
@@ -103,12 +98,12 @@ public class EventoDAO {
     }
 
     public List<Evento> listarTodos() throws InfraExcecao{
-        final String sql = "SELECT EVEN_ID,EVEN_DESC,EVEN_INICIO,EVEN_FIM FROM EVENTO";
+        final String sql = "SELECT EVEN_ID,EVEN_DESCRICAO FROM TB_EVENTO";
         List<Evento> retorno;
         try {
             retorno = jdbcTemplate.query(sql, this::getEvento);
         }catch(EmptyResultDataAccessException e){
-            retorno = null;
+            retorno = new ArrayList();
         }catch(Exception e){
             logger.debug(sql);
             logger.error(e);
@@ -118,33 +113,17 @@ public class EventoDAO {
     }
 
     public List<Evento> listarPorDescricao(final String descricao) throws InfraExcecao{
-        final String sql = "SELECT EVEN_ID,EVEN_DESC,EVEN_INICIO,EVEN_FIM FROM EVENTO WHERE EVEN_DESC LIKE :filtro";
+        final String sql = "SELECT EVEN_ID,EVEN_DESCRICAO FROM TB_EVENTO WHERE EVEN_DESCRICAO LIKE :filtro";
         final MapSqlParameterSource param = new MapSqlParameterSource();
         List<Evento> retorno;
         try {
-            param.addValue("filtro","%".concat(descricao).concat("%"));
-            retorno = jdbcTemplate.query(sql,this::getEvento);
+            param.addValue("filtro","%".concat(descricao).concat("%"),Types.VARCHAR); //".concat(descricao).concat("
+            retorno = jdbcTemplate.query(sql,param,this::getEvento);
         }catch(EmptyResultDataAccessException e){
-            retorno = null;
+            retorno = new ArrayList();
         }catch(Exception e){
             logger.debug(sql);
-            logger.error(e);
-            throw new InfraExcecao(e);
-        }
-        return retorno;
-    }
-
-    public List<Evento> listarPorData(final Date data) throws InfraExcecao{
-        final String sql = "SELECT EVEN_ID,EVEN_DESC,EVEN_INICIO,EVEN_FIM FROM EVENTO WHERE EVEN_DATA_INICIO >= :data OR EVEN_DATA_FIM <= :data";
-        final MapSqlParameterSource param = new MapSqlParameterSource();
-        List<Evento> retorno;
-        try {
-            param.addValue("data",data);
-            retorno = jdbcTemplate.query(sql,this::getEvento);
-        }catch(EmptyResultDataAccessException e){
-            retorno = null;
-        }catch(Exception e){
-            logger.debug(sql);
+            logger.debug(param.getValues());
             logger.error(e);
             throw new InfraExcecao(e);
         }
