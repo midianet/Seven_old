@@ -49,4 +49,14 @@ public class Turma {
     public void setInscricoes(final List<Inscricao> lista) {
         this.inscricoes = lista;
     }
+
+    @Override
+    public boolean equals(final Object obj) {
+        boolean retorno = false;
+        if(obj != null && obj instanceof Turma){
+            retorno = this.getId().longValue() == ((Turma) obj).getId().longValue();
+        }
+        return retorno;
+    }
+
 }

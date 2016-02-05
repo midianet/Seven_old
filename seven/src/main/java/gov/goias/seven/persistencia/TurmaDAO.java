@@ -32,7 +32,6 @@ public class TurmaDAO {
         t.setFim(rs.getDate("TURM_FIM"));
         t.setEvento(new Evento());
         t.getEvento().setId(rs.getLong("EVEN_ID"));
-        t.getEvento().setDescricao(rs.getString("EVEN_DESCRICAO"));
         return t;
     }
 
@@ -63,7 +62,7 @@ public class TurmaDAO {
             param.addValue("fim"   , turma.getFim());
             param.addValue("eventoId",turma.getEvento().getId());
             jdbcTemplate.update(sql,param,gen);
-            final Number id = (Number)gen.getKeys().get("even_id");
+            final Number id = (Number)gen.getKeys().get("turm_id");
             turma.setId(id.longValue());
         }catch(Exception e){
             logger.debug(sql);
@@ -106,10 +105,12 @@ public class TurmaDAO {
         }
     }
 
-    public List<Turma> listarTodos() throws InfraExcecao{
-        final String sql = "SELECT T.TURM_ID, T.TURM_INICIO, T.TURM_FIM, T.EVEN_ID, E.EVEN_DESCRICAO FROM TB_TURMA T INNER JOIN TB_EVENTO ON E.EVEN_ID = T.EVEN_ID";
+    public List<Turma> listarPorEvento(final Evento evento) throws InfraExcecao{
+        final String sql = "SELECT TURM_ID, TURM_INICIO, TURM_FIM, EVEN_ID FROM TB_TURMA WHERE EVEN_ID = :idEvento";
+        final MapSqlParameterSource param = new MapSqlParameterSource();
         List<Turma> retorno;
         try {
+            param.addValue("idEvento",evento.getId());
             retorno = jdbcTemplate.query(sql, this::getTurma);
         }catch(EmptyResultDataAccessException e){
             retorno = null;
