@@ -1,10 +1,9 @@
 package gov.goias.seven.persistencia;
 
-import gov.goias.excecao.InfraExcecao;
+import gov.goias.exception.InfraException;
 import gov.goias.seven.modelo.Evento;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -32,23 +31,26 @@ public class EventoDAO {
         return e;
     }
 
-    public Evento obter(Long id)throws InfraExcecao {
+    public Evento obter(Long id)throws InfraException {
         final String sql = "SELECT EVEN_ID,EVEN_DESCRICAO FROM TB_EVENTO WHERE EVEN_ID = :id";
         final MapSqlParameterSource param = new MapSqlParameterSource();
         Evento retorno;
         try {
             param.addValue("id", id);
             retorno = jdbcTemplate.queryForObject(sql, param, this::getEvento);
-        } catch (DataAccessException e) {
+
+        }catch( EmptyResultDataAccessException e){
+            retorno = null;
+        } catch (Exception e) {
             logger.debug(sql);
             logger.debug(param.getValues());
             logger.error(e);
-            throw new InfraExcecao(e);
+            throw new InfraException(e);
         }
         return retorno;
     }
 
-    public Evento incluir(final Evento evento) throws InfraExcecao{
+    public Long incluir(final Evento evento) throws InfraException{
         final String sql = "INSERT INTO TB_EVENTO(EVEN_DESCRICAO)VALUES(:desc)";
         final MapSqlParameterSource param = new MapSqlParameterSource();
         final KeyHolder gen = new GeneratedKeyHolder();
@@ -61,12 +63,12 @@ public class EventoDAO {
             logger.debug(sql);
             logger.debug(param.getValues());
             logger.error(e);
-            throw new InfraExcecao(e);
+            throw new InfraException(e);
         }
-        return evento;
+        return evento.getId();
     }
 
-    public Evento alterar(final Evento evento) throws InfraExcecao{
+    public Long alterar(final Evento evento) throws InfraException{
         final String sql = "UPDATE TB_EVENTO SET EVEN_DESCRICAO = :desc WHERE EVEN_ID = :id";
         final MapSqlParameterSource param = new MapSqlParameterSource();
         try {
@@ -77,12 +79,12 @@ public class EventoDAO {
             logger.debug(sql);
             logger.debug(param.getValues());
             logger.error(e);
-            throw new InfraExcecao(e);
+            throw new InfraException(e);
         }
-        return evento;
+        return evento.getId();
     }
 
-    public void excluir(final Evento evento) throws InfraExcecao{
+    public void excluir(final Evento evento) throws InfraException{
         final String sql = "DELETE FROM TB_EVENTO WHERE EVEN_ID = :id";
         final MapSqlParameterSource param = new MapSqlParameterSource();
         try {
@@ -92,11 +94,11 @@ public class EventoDAO {
             logger.debug(sql);
             logger.debug(param.getValues());
             logger.error(e);
-            throw new InfraExcecao(e);
+            throw new InfraException(e);
         }
     }
 
-    public List<Evento> listarTodos() throws InfraExcecao{
+    public List<Evento> listarTodos() throws InfraException{
         final String sql = "SELECT EVEN_ID,EVEN_DESCRICAO FROM TB_EVENTO";
         List<Evento> retorno;
         try {
@@ -106,12 +108,12 @@ public class EventoDAO {
         }catch(Exception e){
             logger.debug(sql);
             logger.error(e);
-            throw new InfraExcecao(e);
+            throw new InfraException(e);
         }
         return retorno;
     }
 
-    public List<Evento> listarPorDescricao(final String descricao) throws InfraExcecao{
+    public List<Evento> listarPorDescricao(final String descricao) throws InfraException{
         final String sql = "SELECT EVEN_ID,EVEN_DESCRICAO FROM TB_EVENTO WHERE EVEN_DESCRICAO LIKE :filtro";
         final MapSqlParameterSource param = new MapSqlParameterSource();
         List<Evento> retorno;
@@ -124,7 +126,7 @@ public class EventoDAO {
             logger.debug(sql);
             logger.debug(param.getValues());
             logger.error(e);
-            throw new InfraExcecao(e);
+            throw new InfraException(e);
         }
         return retorno;
     }

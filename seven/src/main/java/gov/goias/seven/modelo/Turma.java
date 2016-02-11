@@ -2,6 +2,7 @@ package gov.goias.seven.modelo;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 public class Turma {
     private Long id;

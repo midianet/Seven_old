@@ -96,12 +96,6 @@
     <dependencies>
 
         <dependency>
-            <groupId>gov.goias</groupId>
-            <artifactId>goias-excecao</artifactId>
-            <version>1.0.1</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>${org.springframework.version}</version>

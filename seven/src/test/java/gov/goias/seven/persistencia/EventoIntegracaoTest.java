@@ -1,7 +1,7 @@
 package gov.goias.seven.persistencia;
 
-import gov.goias.excecao.InfraExcecao;
 import gov.goias.seven.modelo.Evento;
+import gov.goias.seven.modelo.Turma;
 import gov.goias.seven.negocio.EventoBO;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,6 +16,9 @@ import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
 import org.springframework.transaction.annotation.Transactional;
 import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -35,19 +38,21 @@ public class EventoIntegracaoTest {
     @Before
     public void iniciar(){
         evento = new Evento();
-        evento.setId(1L);
         evento.setDescricao("Evento teste");
+        Turma t = new Turma();
+        t.setInicio(new Date());
+        t.setFim   (new Date());
+        evento.setTurmas(new ArrayList());
+        evento.getTurmas().add(t);
     }
 
     @Test
-    public void listarTodosTest() throws InfraExcecao{
-        final List<Evento> lista = bo.listarTodos();
-        assertTrue(!lista.isEmpty());
+    public void listarTodosTest(){
+        assertFalse(bo.listarTodos().isEmpty());
     }
 
     @Test
-    public void inserirTest() throws InfraExcecao{
-        evento.setId(null);
+    public void inserirTest(){
         evento = bo.salvar(evento);
         assertNotNull(evento.getId());
         evento = bo.obter(evento.getId());
@@ -55,21 +60,21 @@ public class EventoIntegracaoTest {
     }
 
     @Test
-    public void alterarTest() throws InfraExcecao{
+    public void alterarTest(){
         final List<Evento> lista = bo.listarTodos();
-        if(!lista.isEmpty()){
+        if(!lista.isEmpty()) {
             evento = lista.get(0);
             evento.setDescricao("Evento teste alterado");
+            evento.getTurmas().get(0).setFim(new Date());
             bo.salvar(evento);
             evento = bo.obter(evento.getId());
             assertNotNull(evento);
-            assertEquals(evento.getDescricao(),"Evento teste alterado");
+            assertEquals(evento.getDescricao(), "Evento teste alterado");
         }
-
     }
 
     @Test
-    public void excluirTest() throws InfraExcecao{
+    public void excluirTest(){
         final List<Evento> lista = bo.listarTodos();
         if(!lista.isEmpty()){
             evento = lista.get(0);
@@ -80,18 +85,17 @@ public class EventoIntegracaoTest {
     }
 
     @Test
-    public void obterTest()throws InfraExcecao {
+    public void obterTest(){
         final List<Evento> lista = bo.listarTodos();
         if(!lista.isEmpty()){
             evento = lista.get(0);
             evento = bo.obter(evento.getId());
             assertNotNull(evento);
         }
-
     }
 
     @Test
-    public void listarPorDescricaoTest() throws InfraExcecao {
+    public void listarPorDescricaoTest(){
         List<Evento> lista = bo.listarTodos();
         if(!lista.isEmpty()){
             evento = lista.get(0);
