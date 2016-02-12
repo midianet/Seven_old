@@ -1,8 +1,8 @@
 package gov.goias.seven.persistencia;
 
-import gov.goias.seven.modelo.Evento;
-import gov.goias.seven.modelo.Turma;
-import gov.goias.seven.negocio.EventoBO;
+import gov.goias.seven.bo.EventoBSO;
+import gov.goias.seven.entidade.EEvento;
+import gov.goias.seven.entidade.ETurma;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,35 +15,36 @@ import org.springframework.test.context.support.DirtiesContextTestExecutionListe
 import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
 import org.springframework.transaction.annotation.Transactional;
-import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static org.junit.Assert.*;
+
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"classpath:/spring-test-jdbc.xml"})
+@ContextConfiguration(locations={"classpath:/spring-test-jpa.xml"})
 @TestExecutionListeners({DependencyInjectionTestExecutionListener.class,
                          TransactionalTestExecutionListener.class,
                          DirtiesContextTestExecutionListener.class})
-@TransactionConfiguration(transactionManager="txManager", defaultRollback= false)
+@TransactionConfiguration(transactionManager="transactionManager", defaultRollback= false)
 @Transactional
-public class EventoIntegracaoTest {
+public class EventoIntegracaoJPATest {
 
     @Autowired
-    private EventoBO bo;
+    private EventoBSO bo;
 
-    private Evento evento;
+    private EEvento evento;
 
     @Before
     public void iniciar(){
-        evento = new Evento();
+        evento = new EEvento();
         evento.setDescricao("Evento teste");
-        Turma t = new Turma();
+        ETurma t = new ETurma();
         t.setInicio(new Date());
         t.setFim   (new Date());
-        evento.setTurmas(new ArrayList());
-        evento.getTurmas().add(t);
+        //evento.setTurmas(new ArrayList());
+        //evento.getTurmas().add(t);
     }
 
     @Test
@@ -61,11 +62,11 @@ public class EventoIntegracaoTest {
 
     @Test
     public void alterarTest(){
-        final List<Evento> lista = bo.listarTodos();
+        final List<EEvento> lista = bo.listarTodos();
         if(!lista.isEmpty()) {
             evento = lista.get(0);
             evento.setDescricao("Evento teste alterado");
-            evento.getTurmas().get(0).setFim(new Date());
+            //evento.getTurmas().get(0).setFim(new Date());
             bo.salvar(evento);
             evento = bo.obter(evento.getId());
             assertNotNull(evento);
@@ -75,7 +76,7 @@ public class EventoIntegracaoTest {
 
     @Test
     public void excluirTest(){
-        final List<Evento> lista = bo.listarTodos();
+        final List<EEvento> lista = bo.listarTodos();
         if(!lista.isEmpty()){
             evento = lista.get(0);
             bo.excluir(evento);
@@ -86,21 +87,11 @@ public class EventoIntegracaoTest {
 
     @Test
     public void obterTest(){
-        final List<Evento> lista = bo.listarTodos();
+        final List<EEvento> lista = bo.listarTodos();
         if(!lista.isEmpty()){
             evento = lista.get(0);
             evento = bo.obter(evento.getId());
             assertNotNull(evento);
-        }
-    }
-
-    @Test
-    public void listarPorDescricaoTest(){
-        List<Evento> lista = bo.listarTodos();
-        if(!lista.isEmpty()){
-            evento = lista.get(0);
-            lista = bo.listarPorDescricao(evento.getDescricao().substring(0,1));
-            assertFalse(lista.isEmpty());
         }
     }
 

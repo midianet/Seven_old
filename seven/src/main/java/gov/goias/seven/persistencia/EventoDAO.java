@@ -31,14 +31,13 @@ public class EventoDAO {
         return e;
     }
 
-    public Evento obter(Long id)throws InfraException {
+    public Evento obter(final Long id){
         final String sql = "SELECT EVEN_ID,EVEN_DESCRICAO FROM TB_EVENTO WHERE EVEN_ID = :id";
         final MapSqlParameterSource param = new MapSqlParameterSource();
         Evento retorno;
         try {
             param.addValue("id", id);
             retorno = jdbcTemplate.queryForObject(sql, param, this::getEvento);
-
         }catch( EmptyResultDataAccessException e){
             retorno = null;
         } catch (Exception e) {
@@ -50,7 +49,7 @@ public class EventoDAO {
         return retorno;
     }
 
-    public Long incluir(final Evento evento) throws InfraException{
+    public void incluir(final Evento evento){
         final String sql = "INSERT INTO TB_EVENTO(EVEN_DESCRICAO)VALUES(:desc)";
         final MapSqlParameterSource param = new MapSqlParameterSource();
         final KeyHolder gen = new GeneratedKeyHolder();
@@ -65,10 +64,9 @@ public class EventoDAO {
             logger.error(e);
             throw new InfraException(e);
         }
-        return evento.getId();
     }
 
-    public Long alterar(final Evento evento) throws InfraException{
+    public void alterar(final Evento evento){
         final String sql = "UPDATE TB_EVENTO SET EVEN_DESCRICAO = :desc WHERE EVEN_ID = :id";
         final MapSqlParameterSource param = new MapSqlParameterSource();
         try {
@@ -81,10 +79,9 @@ public class EventoDAO {
             logger.error(e);
             throw new InfraException(e);
         }
-        return evento.getId();
     }
 
-    public void excluir(final Evento evento) throws InfraException{
+    public void excluir(final Evento evento){
         final String sql = "DELETE FROM TB_EVENTO WHERE EVEN_ID = :id";
         final MapSqlParameterSource param = new MapSqlParameterSource();
         try {
@@ -98,7 +95,7 @@ public class EventoDAO {
         }
     }
 
-    public List<Evento> listarTodos() throws InfraException{
+    public List<Evento> listarTodos(){
         final String sql = "SELECT EVEN_ID,EVEN_DESCRICAO FROM TB_EVENTO";
         List<Evento> retorno;
         try {
@@ -113,7 +110,7 @@ public class EventoDAO {
         return retorno;
     }
 
-    public List<Evento> listarPorDescricao(final String descricao) throws InfraException{
+    public List<Evento> listarPorDescricao(final String descricao){
         final String sql = "SELECT EVEN_ID,EVEN_DESCRICAO FROM TB_EVENTO WHERE EVEN_DESCRICAO LIKE :filtro";
         final MapSqlParameterSource param = new MapSqlParameterSource();
         List<Evento> retorno;

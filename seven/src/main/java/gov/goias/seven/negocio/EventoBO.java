@@ -27,11 +27,19 @@ public class EventoBO {
 
     @Transactional(rollbackFor = Exception.class)
     public Evento salvar(final Evento evento){
-        final Optional<Long> id = Optional.ofNullable(evento.getId());
-        (id.isPresent() == true ? dao.alterar(evento) : dao.incluir(evento)).longValue();
+        if(evento.getId() == null) {
+            dao.incluir(evento);
+        }else {
+            dao.alterar(evento);
+        }
         evento.getTurmas().forEach(t -> t.setEvento(evento));
-        evento.getTurmas().stream().filter(t -> t.getId() == null).forEach(t -> turmaDAO.incluir(t));
-        evento.getTurmas().stream().filter(t -> t.getId() != null).forEach(t -> turmaDAO.alterar(t));
+        evento.getTurmas().forEach(t -> {
+            if (t.getId() == null) {
+                turmaDAO.incluir(t);
+            }else {
+                turmaDAO.alterar(t);
+            }
+        });
         final List<Turma> real = turmaDAO.listarPorEvento(evento);//Removendo os removidos na interface
         real.stream().filter(to-> !evento.getTurmas().contains(to)).forEach(t -> turmaDAO.excluir(t));
         return  evento;
@@ -47,9 +55,7 @@ public class EventoBO {
 
     public List<Evento> listarTodos(){
         final List<Evento> l = dao.listarTodos();
-        for(Evento e : l){
-            e.setTurmas(turmaDAO.listarPorEvento(e));
-        }
+        l.forEach(e -> e.setTurmas(turmaDAO.listarPorEvento(e)));
         return l;
     }
 

@@ -28,7 +28,7 @@ public class TurmaDAO {
         return null; //TODO:Testar usar isso
     }
 
-    private Turma getTurma(ResultSet rs, int i) throws SQLException {
+    private Turma getTurma(final ResultSet rs, final int i) throws SQLException {
         final Turma t = new Turma();
         t.setId(rs.getLong("TURM_ID"));
         t.setInicio(rs.getDate("TURM_INICIO"));
@@ -38,14 +38,14 @@ public class TurmaDAO {
         return t;
     }
 
-    public Turma obter(Long id)throws InfraException {
+    public Turma obter(final Long id)throws InfraException {
         final String sql = "SELECT T.TURM_ID, T.TURM_INICIO, T.TURM_FIM, T.EVEN_ID, E.EVEN_DESCRICAO FROM TB_TURMA T INNER JOIN TB_EVENTO ON E.EVEN_ID = T.EVEN_ID WHERE T.TURM_ID = :id";
         final MapSqlParameterSource param = new MapSqlParameterSource();
         Turma retorno;
         try {
             param.addValue("id",id);
             retorno = jdbcTemplate.queryForObject(sql, param, this::getTurma);
-        }catch(EmptyResultDataAccessException e){
+        }catch(final EmptyResultDataAccessException e){
             retorno = null;
         }catch(Exception e){
             logger.debug(sql);
@@ -76,7 +76,7 @@ public class TurmaDAO {
         return turma;
     }
 
-    public Turma alterar(Turma turma) throws InfraException{
+    public Turma alterar(final Turma turma) throws InfraException{
         final String sql = "UPDATE TB_TURMA SET TURM_INICIO = :inicio, TURM_FIM = :fim, EVEN_ID = :eventoId WHERE TURM_ID = :id";
         final MapSqlParameterSource param = new MapSqlParameterSource();
         try {
@@ -94,7 +94,7 @@ public class TurmaDAO {
         return turma;
     }
 
-    public void excluir(Turma turma) throws InfraException{
+    public void excluir(final Turma turma) throws InfraException{
         final String sql = "DELETE FROM TB_TURMA WHERE TURM_ID = :id";
         final MapSqlParameterSource param = new MapSqlParameterSource();
         try {
